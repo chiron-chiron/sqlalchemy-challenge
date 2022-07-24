@@ -20,6 +20,7 @@ import datetime as dt
 Base = declarative_base()
 
 
+
 ## Create Measurements and Stations classes
 # Measurements
 class Measurements(Base):
@@ -48,7 +49,7 @@ conn = engine.connect()                                         # Establish
 
 
 # Create both the Measurements and Stations tables within the datase
-Base.meta.creation_all(conn)
+# Base.meta.creation_all(conn)
 
 
 ## Create our session (link) from Python to the DB
@@ -57,7 +58,7 @@ session = Session(bind = engine)
 #======================================================================================
 
 
-#======================================================================================
+
 ## Create Climate App
 app = Flask(__name__)
 
@@ -137,7 +138,7 @@ def tobs():
     station_9281_dict = dict(station_9281)
 
     # Return dict, jsonified.
-    return jsonify{station_9281_dict}
+    return jsonify(station_9281_dict)
 
 
 
@@ -166,7 +167,7 @@ def start_date(startdate):
     results2_dict = dict(result2)
 
     # Return dict, jsonified.
-    return jsonify{results2_dict}
+    return jsonify(results2_dict)
 
 
 
@@ -189,7 +190,7 @@ def start_end_date(startdate, enddate):
     results3_dict = dict(result3)
 
     # Return dict, jsonified.
-    return jsonify{results3_dict}
+    return jsonify(results3_dict)
 
 
 
