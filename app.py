@@ -70,8 +70,8 @@ def home():
         f"Rain measurement for last 12 months: /api/v1.0/precipitation<br/>"
         f"Stations and respective numbers: /api/v1.0/stations<br>"
         f"Temperature observations from the most active station (Heewii) for last 12 months: /api/v1.0/tobs<br/>"
-        f"Temperature info (min, max, ave) for dates you specify (yyy-mm-dd): /api/v1.0/<start><br/>"
-        f"Temperature info (min, max, ave) for date range you specify (start and end, yyy-mm-dd): /api/v1.0/<start>/<end>"
+        f"Temperature info (min, max, ave) for dates you specify (yyy-mm-dd): /api/v1.0/startdate/<start><br/>"
+        f"Temperature info (min, max, ave) for date range you specify (start and end, yyy-mm-dd): /api/v1.0/startenddate/<start>/<end>"
         )
 # List all routes here
 
@@ -89,6 +89,7 @@ def precipitation():
         order_by(Measurements.date.asc()).\
             filter(Measurements.date >= date).all()
 
+    # Close session
     session.close()
 
     # Convert result into a dict (date as key, prcp as value)
@@ -106,6 +107,7 @@ def stations_list():
     print(f"Stations and respective numbers")
     stations_list = session.query(Stations.name, Stations.station).all()
 
+    # Close session
     session.close()
 
     # Convert result into a dict (date as key, prcp as value)
@@ -128,6 +130,7 @@ def tobs():
         filter(Measurements.date >= date2).\
             order_by(Measurements.date.asc()).all()
 
+    # Close session
     session.close()
 
     # Convert results into dict
@@ -140,32 +143,53 @@ def tobs():
 
 ## Define next route: query based on start date
 # Temperature info (min, max, ave) for dates you specify (yyy-mm-dd)
-@app.route("/api/v1.0/<start>")
-def start():
-    print("Temperature info (min, max, ave) for dates you specify (yyy-mm-dd)")
+@app.route("/api/v1.0/startdate/<start>")
+def start_date(startdate):
+    print("Temperature info (min, max, ave) for dates you specify (yyyy-mm-dd)")
     
-    # Firstly, join 2 tables together
-    sel1 = [Measurements.station, Measurements.date, Measurements.prcp, Measurements.tobs, Stations.station, Stations.name, Stations.latitude, Stations.longitude, Stations.elevation]
-    same_station = session.query(*sel1).filter(Measurements.station == Stations.station).all()
-    same_station
+    # # Firstly, join 2 tables together
+    # sel1 = [Measurements.station, Measurements.date, Measurements.prcp, Measurements.tobs, Stations.station, Stations.name, Stations.latitude, Stations.longitude, Stations.elevation]
+    # same_station = session.query(*sel1).filter(Measurements.station == Stations.station).all()
+    # same_station
     
     # Run query
-    temp_all = session.query(Measurements.station, func.min(Measurements.tobs), func.max(Measurements.tobs), func.avg(Measurements.tobs)).\
-        filter(Measurements.station == 'USC00519281').all()
+    sel2 = [Measurements.date, func.min(Measurements.tobs), func.max(Measurements.tobs), func.max(Measurements.tobs)]
+    
+    result2 = (session.query(*sel2).\
+        filter(func.strftime("%Y-%m-%d", Measurements.date) >= startdate).\
+            group_by(Measurements.date).all())
 
+    # Close session
     session.close()
 
     # Convert results into dict
-     = dict()
+    results2_dict = dict(result2)
 
     # Return dict, jsonified.
-    return jsonify{}
+    return jsonify{results2_dict}
 
-# Define next route: query based on start and end date
-@app.route("/api/v1.0/<start>/<end>")
-def startandend():
+
+
+## Define next route: query based on start and end date
+@app.route("/api/v1.0/startenddate/<start>/<end>")
+def start_end_date(startdate, enddate):
     print("Server received request for querying based on start and end date")
-    return "Welcome to the temperature observation data page, where you can query date ranges!"
+    
+    sel3 = [Measurements.date, func.min(Measurements.tobs), func.max(Measurements.tobs), func.max(Measurements.tobs)]
+    
+    result3 = (session.query(*sel3).\
+        filter(func.strftime("%Y-%m-%d", Measurements.date) >= startdate).\
+            filter(func.strftime("%Y-%m-%d", Measurements.date) <= enddate).\
+                group_by(Measurements.date).all())
+
+    # Close session
+    session.close()
+    
+    # Convert results into dict
+    results3_dict = dict(result3)
+
+    # Return dict, jsonified.
+    return jsonify{results3_dict}
 
 
 
