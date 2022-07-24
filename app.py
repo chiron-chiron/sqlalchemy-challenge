@@ -21,6 +21,20 @@ Base = declarative_base()
 
 
 
+## Create and establish database connection
+engine = create_engine("sqlite:///Resources/hawaii.sqlite")     # Create
+conn = engine.connect()                                         # Establish
+
+
+# Create both the Measurements and Stations tables within the datase
+# Base.meta.creation_all(conn)
+
+
+## Create our session (link) from Python to the DB
+session = Session(bind = engine)
+
+
+
 ## Create Measurements and Stations classes
 # Measurements
 class Measurements(Base):
@@ -40,20 +54,6 @@ class Stations(Base):
     latitude = Column(Float)
     longtitude = Column(Float)
     elevation = Column(Float)
-
-
-
-## Create and establish database connection
-engine = create_engine("sqlite:///Resources/hawaii.sqlite")     # Create
-conn = engine.connect()                                         # Establish
-
-
-# Create both the Measurements and Stations tables within the datase
-# Base.meta.creation_all(conn)
-
-
-## Create our session (link) from Python to the DB
-session = Session(bind = engine)
 #======================================================================================
 #======================================================================================
 
